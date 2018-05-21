@@ -1,0 +1,73 @@
+Git
+
+origin = shortcut for URL of remote repos
+
+
+Merge strategies >> https://git-scm.com/docs/merge-strategies
+
+Fast forward merge vs merge commit
+
+Smaller, frequent merges better than larger, less frequent merges - helps to avoid merge conflicts
+
+
+
+Merge conflict - conflicting files are modified by Git and placed in the working tree for review
+<<< >>> signs used as conflict markers
+
+from ours
+===========
+from theirs
+
+
+
+Tracking branch is a local branch that represents a remote branch, e.g. origin/master is a local representation of remote master branch
+
+Tracking branches only updated by commands like pull, fetch, clone, push
+
+
+
+Network Commands:
+Clone-clones remote repository
+Fetch-retrieves new objects and references from the remote repository >> doesn't require a merge
+Pull-fetches and merges commits locally >> fetch AND merge
+Push-adds new objects and references to the remote repository
+
+Sourcetree fetches automatically >> fetched commits on the remote tracking branch
+
+General rule is to fetch / pull before doing a push  >> if nothing is pulled, it's safe to push!
+
+
+Git Diff function can tell differences between 2 commits 
+
+
+Rebasing overwrites commit history >> do not do this on code that has been shared with others
+>> moves commits to a new parent or 'base', changes the commit ID of each commit
+
+Always checkout feature branch and rebase onto base branch 
+
+
+
+Rebasing can be used to squash commits together into a single commit
+
+
+
+
+Pull requests opened using an online Git host (e.g. Bitbucket, GitHub)
+Ultimate goal is to merge a branch
+>> merge is done either by Pull request from online client OR by pushing merge from local client
+
+
+Forking >> copying a remote repository to your own online account (Bitbucket, GitHub)
+ - both repositories are remote, with the upstream repos being the source of truth
+
+Commits on upstream repos will not be reflected in fork automatically 
+ 
+Syncing via Bitbucket creates a merge commit on the forked repos - this is NOT a commit in the upstream repos
+ 
+
+
+Workflows:
+> Centralized, only using the Master branch 
+> Feature Branch, uses a specific branch for each work item and merges into a longer running branch 
+> Forking, 2 remote repositories, users push to 2nd remote repos and then a pull is issued from upstream repos - so users do not need write access on upstream, provides backups (but can become out of sync)
+

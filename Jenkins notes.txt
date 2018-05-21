@@ -1,0 +1,31 @@
+Jenkins
+
+Apache Tomcat application, listens on port 8080 by default - make sure no other services using this port
+
+Install Jenkins user with no password required at runtime onto all relevant servers - plus set up key exchange between servers
+
+Restart option under Manage Plugins (in the UI) only restarts Jenkins when no jobs are running
+
+https://anonymousbi.wordpress.com/2014/09/17/pentaho-data-integration-scheduling-with-jenkins/  >> using Jenkins as the scheduler tool for PDI jobs
+
+http://diethardsteiner.github.io/pdi/2017/02/17/Continous-Integration-with-Jenkins-and-PDI.html  >> integration of Git, Jenkins and PDI
+
+http://www.andyfrench.info/2015/03/automatically-triggering-jenkins-build.html  >> integration of Git and Jenkins
+
+Full backups through GUI must be done manually, but CLI could be used for cron job to do scheduled backups
+Thin backups can be scheduled through GUI (using cron)
+
+Projects tied to a specific node. Master should only be used for controlling jobs.
+Slave servers must have java installed.
+
+Freestyle project = most common type of job
+
+Jobs can be defined as commands in a shell script within the Jenkins UI.
+
+Add SSH keys into GitHub to allow Jenkins to check out code without authentication.
+
+Discard old builds in Jenkins if the version history is all logged in Git.
+
+http://www.bestdevops.com/agile-data-integration-continuous-integration-with-jenkins-and-pdi/  >>  Automating PDI builds with Jenkins
+
+Build with Parameters - result of setting parameters in build, this is prompted when trying to execute the build.

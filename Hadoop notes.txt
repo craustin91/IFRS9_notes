@@ -1,0 +1,104 @@
+Hadoop
+
+The conf/hadoop-defaults.xml file contains default values for every parameter in Hadoop.
+ >> This file is considered read-only. You override this configuration by setting new values in conf/hadoop-site.xml.
+ 
+ 
+ dfs.replication
+ >> This is the default replication factor for each block of data in the file system. For a production cluster, this should usually be left at its default value of 3
+ 
+In a large-scale environment, it is recommended that you create a user named "hadoop" on each node for the express purpose of owning and running Hadoop tasks
+
+
+The dfs module, also known as "FsShell," provides basic file manipulation operations.
+
+
+Whereas a typical UNIX or Linux system stores individual users' files in /home/$USER, the Hadoop DFS stores these in /user/$USER
+
+
+
+Upload a file. To insert a single file into HDFS, we can use the put command like so:
+
+ >> someone@anynode:hadoop$ bin/hadoop dfs -put /home/someone/interestingFile.txt /user/yourUserName/
+ 
+    This copies /home/someone/interestingFile.txt from the local file system into /user/yourUserName/interestingFile.txt on HDFS.
+
+
+	
+Another synonym for -put is -copyFromLocal. The syntax and functionality are identical.
+
+The get command is the inverse operation of put; it will copy a file or directory (recursively) from HDFS into the target of your choosing on the local file system. A synonymous operation is called -copyToLocal.
+
+
+
+While the dfs module for bin/hadoop provides common file and directory manipulation commands, they all work with objects within the file system. The dfsadmin module manipulates or queries the file system as a whole
+
+ >> A brief status report for HDFS can be retrieved with bin/hadoop dfsadmin -report. This returns basic information about the overall health of the HDFS cluster, as well as some per-server metrics.
+ 
+ >> If you need to know more details about what the state of the NameNode's metadata is, the command bin/hadoop dfsadmin -metasave filename will record this information in filename
+ 
+ 
+
+When decommissioning nodes, it is important to disconnect nodes from HDFS gradually to ensure that data is not lost
+
+
+
+Starting with Hadoop 0.16.1, HDFS has included a rudimentary file permissions system. This permission system is based on the POSIX model, but does not provide strong security for HDFS files
+
+  >> Security permissions and ownership can be modified using the bin/hadoop dfs -chmod, -chown, and -chgrp operations
+  
+  
+  
+The username which was used to start the Hadoop process (i.e., the username who actually ran bin/start-all.sh or bin/start-dfs.sh) is acknowledged to be the superuser for HDFS.
+
+
+
+
+After decommissioning nodes, restarting a cluster, or periodically during its lifetime, you may want to ensure that the file system is healthy--that files are not corrupted or under-replicated, and that blocks are not missing.
+
+Hadoop provides an fsck command to do exactly this. It can be launched at the command line like so:
+
+  >> bin/hadoop fsck [path] [options]
+  
+If run with no arguments, it will print usage information and exit. If run with the argument /, it will check the health of the entire file system and print a report. If provided with a path to a particular directory or file, it will only check files under that path. If an option argument is given but no path, it will start from the file system root (/)
+
+
+
+
+For larger Hadoop installations which span multiple racks, it is important to ensure that replicas of data exist on multiple racks. This way, the loss of a switch does not render portions of the data unavailable due to all replicas being underneath it.
+
+
+HDFS can be made rack-aware by the use of a script which allows the master node to map the network topology of the cluster.
+  >> To set the rack mapping script, specify the key topology.script.file.name in conf/hadoop-site.xml. 
+
+
+
+
+HDFS exposes a web server which is capable of performing basic status monitoring and file browsing operations. By default this is exposed on port 50070 on the NameNode. 
+
+  >> Accessing http://namenode:50070/ with a web browser will return a page containing overview information about the health, capacity, and usage of the cluster (similar to the information returned by bin/hadoop dfsadmin -report).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

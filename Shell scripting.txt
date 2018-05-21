@@ -1,0 +1,155 @@
+Shell scripting
+
+
+
+
+
+bash = unix shell
+
+#!/bin/bash at start of scripts to invoke bash shell
+
+to call a script:
+> ./<script_name>
+
+
+
+
+
+
+chmod is the command and system call which may change the access permissions to file system objects (files and directories)
+e.g.:
+> chmod 755 hello_world  
+or, to just make the file executable
+> chmod -x hello_world      
+
+(owner, group, everyone_else) 
+
+#	Permission	rwx
+7	read, write and execute	rwx
+6	read and write	rw-
+5	read and execute	r-x
+4	read only	r--
+3	write and execute	-wx
+2	write only	-w-
+1	execute only	--x
+0	none	---
+
+
+--- for directories, these must be executable for users to see the directory!!!
+
+
+
+remove a file:
+> rm <file_name>
+
+remove a directory:
+> rmdir <directory_name>      -- only if the directory is empty
+> rm -r    (applies recursively)   -- if there are files in the directory
+
+
+
+
+
+list everything 
+> ls -a
+
+detailed list
+> ls -l
+
+detailed list on everything
+> ls -al
+
+
+pushd & popd to flip between directories
+> pushd /<new_directory>
+> popd     = back to original directory
+
+
+
+list file type
+> file .file_name
+
+
+
+locate command
+> locate "string"
+- requires db to be up to date for accurate location
+
+
+find other commands
+> which cal
+- shows whether the calendar is installed
+- so can run
+> cal
+to print calendar
+
+
+show commands run recently
+> history
+
+
+man = manual
+> man <command>
+
+
+touch - to update modified date
+> touch <filename>
+- if file does not exist, it will be created (empty)
+
+
+> cp = copy
+
+> mv = move
+e.g. 
+> mv file.bak file
+will overwrite contents of file with file.bak (backup), leaving just the backed up version of file
+
+
+
+write to a file
+> cat >> filex
+allows us to write text that is piped into filex
+Ctrl+D = Done
+
+
+
+less
+> less file1
+allows us to page through file 1
+q = quit
+
+
+
+nano = text editor
+> nano filex
+
+
+piping
+> history | less
+will pipe the content of the history command into the less program
+
+
+
+this will input into a file the contents of ls -al command
+> ls -al / > text.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

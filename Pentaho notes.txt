@@ -1,0 +1,303 @@
+Pentaho DI1000
+
+https://help.pentaho.com/Documentation
+
+
+
+Transformation 
+	> consists of steps and hops
+		> step contains logic, hop identifies pathway
+	> not a workflow - rather a network of logical tasks
+	> all steps actually running in parallel, logic of steps applying as data flows through (except for blocking steps, e.g. a sort - needs all rows before it can do its work)
+	> data flowing through transformation referred to as the stream
+ 
+	Hops
+		> pathway the data is flowing 
+		
+	Values
+		> metadata and data
+		> metadata for a column is only transported with the first data row for the column
+			> all subsequent rows reference this metadata
+		
+ 
+ 
+Job
+	> is a workflow
+	> orchestrates multiple transformations
+	> start, check, watch, execute, notify, finish
+	> hops do not represent data flow, but rather order of steps
+	
+	
+	
+Kettle
+	> PDI engine
+	> used synonymous with PDI
+	
+Spoon
+	> GUI for modeling
+	> building transformations & jobs
+	
+Pan
+	> command line for executing transformations modeled in Spoon
+	
+Kitchen
+	> command line for executing jobs modeled in Spoon
+	
+Carte / Jetty
+	> lightweight web/http server for remotely executing jobs/transformations
+	> remote monitoring
+	> clustering
+	
+
+	
+Spoon launched using spoon.bat or spoon.sh in design-tools/data-integration
+
+
+Can work with repository or local filesystem to store transformations (.ktr) or jobs (.kjb) in XML format
+	> work implementations usually stored in repository
+
+
+	
+
+Naming convention for step names?
+	> Log files give step name but not step type, so a name that includes the step type is useful for debugging
+	
+
+	
+Preview within a configuration window only shows results of that step
+	> Anywhere else shows the entire transformation
+	
+	
+Changing field Type in PDI changes how PDI reads the field in the stream - this does not need to match the source data type
+
+
+Date format lenient?
+	> accounts for incorrect dates... so 61st August would show 30 days after August 31st
+	
+
+When connected to repos, in order to save locally go to File > export XML
+	> Similarly Import from XML file to bring local file to repos
+	
+	
+CSV files read much quicker than like for like txt files 
+	
+	
+	
+Metadata changes on file input doesn't change data within the stream - until the Output step
+	> With exception of Trim type field, which removes trailing spaces - this is trimmed within the stream
+	
+	
+Text File Input
+	> Reads in 1 or many files, or a directory - but content (e.g. file type, delimiter etc. must be the same for all included files)
+	> compared to CSV input, only 1 file input per step
+	> compressed files can also be read
+	
+
+Parameter
+	> Local variable
+	> Only applies to the specific transformation it is defined in
+	
+	
+Variable
+	> used dynamically & programatically in a variety of scopes
+	> can be used in steps across Jobs & Transformations
+	> e.g. in server connection details to differentiate between environments easily based on DEV vs PROD kettle.properties file
+	
+	
+Environment variables
+	> can be set in kettle.properties file or in PDI
+	
+	
+Argument
+	> named, user-supplied, single-value input given as a command line argument - when running a PDI job/transformation manually from Pan/Kitchen (CLI), or as part of a script
+	
+	
+Edit Kettle properties file to add variables by Edit in main PDI menu
+
+
+Database connections
+	> Database drivers must be added to \data-integration\lib directory
+	
+
+Non-existent tables on table output step will NOT be created at runtime
+	> unlike with non-existent directories, tables must be defined before run time
+	> SQL button will generate any SQL required to create the required table
+	> DDL can be run via the Explore database connection function, or in line from using the SQL button to generate SQL (DDL)
+
+	
+Table output
+	> using the Truncate table option executes a truncate/insert
+	> Using Specify database fields allows custom mapping of fields between input and output steps, as well as renaming of table fields mapped from stream fields
+	
+	
+Insert/Update is done using a specific step type
+	> maps the key/lookup value between source and target
+	> define the fields to be updated based on the lookup between source and target (the key must be included here as well for inserts)
+	
+
+Dummy Do Nothing steps good for metrics - e.g. interrogating row counts for true vs false conditions
+	> step metrics not included in hops, so a Dummy step can provide this insight for debugging
+
+
+Data Grid
+	> manual typing of rows
+	
+	
+'?' can be passed as parameters to load from external sources e.g. within a SELECT statement clause
+
+
+Performance considerations for 'Execute for each row' function 
+
+	
+For performance tuning of a transformation...
+	> start with the slowest running step, as this determines the speed of a transformation
+	
+	
+Change Number of Copies to Start
+	> efficient way of duplicating steps with improved performance
+	> each copy runs on a different core of the host machine - spreads the load, improves performance
+	> Running in parallel check box >> splits the step up across multiple cores
+		> so 1 .csv file split across e.g. 3 cores
+			
+
+Distribution of data
+	> Distribution of data coming out of steps
+	> Warning box appears, options include:
+		> Distribute - round robin, destination steps receive rows in turn
+		> Custom distribution - e.g. for load balancing
+		> Copy rows - all rows sent to all destination steps
+	> This can be configured using the Data Movement option on the source step
+
+	
+Transformation Properties > Miscellaneous 
+	> Nr of rows in rowset = buffer size for each step, how many rows can a step hold at one time?
+	> Applies to entire transformation
+	
+
+Dotted line on a step indicates high input/output ratio
+	> This will likely be a slow-performing step (or impacted by one)
+	
+	
+PDI Merge Join
+	> supports full range of join types - inner, outer, etc.
+	
+
+Merge Rows Diff
+	> allows comparison of 2 streams of data - reference stream and compare stream
+	> e.g. to identify deltas in source data where no timestamp is available
+		> Reference stream = previously loaded data
+		> Compare stream = newly extracted source data
+		> Output row = identical, changed, new, deleted = new flag
+		
+		
+Microsoft Excel Input step struggles with >2,000 rows
+	> best to save as .csv and use CSV File Input
+	
+	
+Formula step uses Oasis OpenFormula syntax
+		
+
+Always Sort before a Group By
+
+
+
+
+>>>> Jobs <<<<
+
+
+Job Hops
+	> execution direction & order, a Job is a workflow!
+	> If successful, do X, if failed, do Y
+	> some steps can be Unconditional - moves through the Job Hop regardless of outcome of the Step
+	
+Every Job needs a START step
+
+In a Job, a Step is a 'Job Entry' (rather than a 'Step')
+	> A single Job Entry can be placed on Job canvas multiple times
+	
+Jobs run Transformations and Jobs (Sub-Jobs)
+
+Dummy Job steps also exist
+	> Can be useful for looping - because 2 steps cannot be joined bi-directionally
+
+	
+Table Exists / File Exists job entries useful for safeguarding against messy failures
+	> good defensive practice
+	> polling options available for Wait for File / Wait for Table / Wait for SQL
+	
+
+File Size Check option on Wait for File to verify if file is still being written to or is static before picking it up
+
+	
+
+>>>> Repository <<<<
+
+PDI repos is based on Java Content Repository (JCR)
+	> a database with enterprise security (Spring Security)
+	> full revision history (turned off by default) > requires a comment for every change if turned on
+	> recycle bin
+	> ability to lock objects for editing
+	
+Trash is not automatically emptied from repos
+
+Exporting from repos can only be done on folder level
+	> to export a single file, simply save it to local filesystem
+	
+Very easy to import via xml files
+
+
+
+>>>> Scheduling <<<<
+
+DI server scheduler is Quartz (java-based)
+	> executed within the Carte instance
+	> other options on server level e.g. CRON
+	
+Actions > Schedule from within a Job / Transformation
+	
+To view the scheduler: View > Perspectives > Scheduler 
+	> this is schedule information, NOT execution
+	
+		
+	
+	
+>>>> Monitoring <<<<
+	
+Kettle slave server for monitoring
+	> need to create a new slave server within the Transformation / Job
+
+
+	
+
+
+>>>> Detaield logging <<<<
+
+Apache Log for J
+	> running on Tomcat
+	
+Also database logging available
+	> pdi_log_job
+	> pdi_log_trans  >> Transformation properties > Logging
+	
+		
+	
+
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	

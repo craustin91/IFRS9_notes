@@ -1,0 +1,42 @@
+Topics to cover:
+
+
+- Hadoop troubleshooting
+
+- Hive reading
+
+
+
+- Pentaho review basics course
+
+- Pentaho advanced course
+
+- Pentaho review Big Data course
+
+- Pentaho installation documentation
+
+- Pentaho and big data reading / videos
+
+
+
+- Git course
+	> Tortoise Git
+
+
+
+
+- Jenkins course
+
+
+
+- Bash scripting
+
+
+- Maven
+
+
+- Pentaho <> sfpt server
+
+
+- JIRA workflows
+
