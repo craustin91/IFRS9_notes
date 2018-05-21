@@ -1,0 +1,49 @@
+Pentaho DI1500
+
+Metadata injection
+
+The Transformation Executor step allows you to execute a Pentaho Data Integration (PDI)
+transformation. By default, the specified transformation will be executed once for each input
+row.
+
+
+Kettle sequences are unique only when used in the same transformation. Also, they are not
+stored, so the values start back at the same value every time the transformation is launched.	
+
+	
+Copying and pasting a Step into Notepad will generate the XML associated with the Step
+	> easy to grab e.g. filters based on the XML tags within the XML for the Transformation
+
+
+
+	
+Summary of MDI Architectures
+
+In general, a MDI process can:
+
+1. To simply inject metadata and call the template transformation is referred to as: MDI
+Standard.
+
+2. Additionally, the data can be pushed (streamed) from the main to the template
+transformation and conversely pulled back. The use case is when the template processes
+dynamic data from the main transformation referred to as: MDI Data Flow
+
+3. For big data use cases, the template transformation with metadata defines an _injected.ktr. -
+Phase 1. In Phase 2, the _injected.ktr is used as the template for the Transformation.
+Referred to as: MDI 2 Phase Processing, used in our Onboarding Blueprint for Big Data:
+Filling the Data Lake
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
