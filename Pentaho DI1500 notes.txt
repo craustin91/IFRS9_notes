@@ -35,15 +35,28 @@ Filling the Data Lake
 	
 	
 	
+Clustering:
+
+Carte Clusters
+	> 1 Master, 2 or more Slaves
+	> dynamic or static, with dynamic, the slaves are not known until runtime. Static is better for smaller environments.
+	
+Clustering allows transformations and transformation steps to be executed in parallel on more than
+one Carte server. 
 	
 	
 	
-	
-	
-	
-	
+When designing steps in a clustered transformation, try to arrange them in such a way as to get long
+lines of clustered steps. This avoids passing rows between the master and slaves. A long sequence of
+clustered steps is sometimes called a “swim lane”, as it allows to completely parallelize processing.	
 	
 	
 
 	
+	
+Pan and Kitchen Command Line Tools	
+
+	> Pan is the PDI command line tool for executing transformations
+	> Kitchen is the PDI command line tool for executing jobs
+	> All Pan and Kitchen options are the same for both operating systems
 	

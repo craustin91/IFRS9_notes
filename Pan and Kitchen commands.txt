@@ -1,0 +1,8 @@
+./kitchen.bat /rep:Class_DI_Repository /user:admin /pass:password /dir:/public/PDI_Trn_Objects /job:LoadJvmDataToTable
+
+
+./pan.bat /rep:Class_DI_Repository /user:admin /pass:password /dir:/public/PDI_Trn_Objects /trans:GD2_HelloWorld
+
+
+
+
