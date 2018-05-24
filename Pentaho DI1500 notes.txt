@@ -60,3 +60,21 @@ Pan and Kitchen Command Line Tools
 	> Kitchen is the PDI command line tool for executing jobs
 	> All Pan and Kitchen options are the same for both operating systems
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
