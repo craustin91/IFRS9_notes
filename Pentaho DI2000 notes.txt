@@ -1,0 +1,13 @@
+DI2000
+
+3 Vs of Big Data
+	> Volume
+	> Velocity
+	> Variety
+	
+
+Workflow orchestration
+	> Ingest - recommended not to load directly from a source db to Hadoop, use a tool like Flume / Sqoop
+	> Process - visual MapReduce in PDI 
+	> Publish
+	> Report
