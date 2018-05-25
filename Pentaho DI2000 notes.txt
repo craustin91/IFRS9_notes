@@ -342,7 +342,17 @@ Hive (Apache)
 		> but would need to be using a splittable compression algorithm
 		
 	> Hive's high latency makes it a good choice for integration with PDI Jobs / Transformations
-		> not sub-second query responses
+		> ETL / scheduled reports, not sub-second query responses
+		
+	> PDI connects to Hive using JDBC driver
+
+	> Hive Thrift Server must run on port 10000
+	
+	> Any SQL script steps within PDI can run on Hive, once the database connection is established
+	
+	> all files in a folder releting to a table will exist in that table
+	
+	
 		
 
 Impala (Cloudera)
@@ -366,8 +376,23 @@ Impala (Cloudera)
 			
 
 			
+Loading data into Hive
+	
+	> copy files into HDFS folder for the Hive table using Hadoop Copy Files step in PDI
+	
+	> use the Hadoop File Output step to create a file for Hive
+	
+	> use other file management steps to create or move a file for Hive
+	
+	
+	> avoid using steps like Table Output, Update, Deletes from PDI with Hive
+		> but if this is required, turn on transaction/ACID support in Hive
+	
+	
+Extracting data from Hive
 
-	
-	
-	
-	
+	> Tabie Input step reading from Hive using HiveQL
+		> may look like it has hung whilst Hive is being queried
+		
+		
+		
