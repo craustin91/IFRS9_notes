@@ -422,7 +422,7 @@ Hive best practices
 			
 
 HBase
-	> distributed, spares, columnar data storage system for managing structured data	
+	> distributed, sparse columnar data storage system for managing structured data	
 		> not RDBMS in the same way as Hive / Impala exist, no native support for SQL (but SQL based layers do exist, e.g. Phoenix)
 		
 	> real time read/write random access to very large datasets
