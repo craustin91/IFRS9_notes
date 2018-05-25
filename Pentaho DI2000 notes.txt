@@ -394,5 +394,44 @@ Extracting data from Hive
 	> Tabie Input step reading from Hive using HiveQL
 		> may look like it has hung whilst Hive is being queried
 		
+	
 		
+Hive best practices
+
+		> use Tez execution engine rather than traditional MapReduce for better performance & throughput
 		
+		> use of vectorization can improve performance (from Hive 13) 
+			> performs scans, aggregations, filter, joins in batches of 1024 rows rather than row by row	
+				> enabled with specific parameters
+				
+		> partitioning tables 
+		
+		> map joins
+		
+		> Cost Based Optimizer (CBO) - with Hive 14
+			> performs optimization based on query cost for more efficiency
+				> enabled with specific parameters
+		
+		> parallel execution
+			> enabled with a specific parameter
+		
+		> ORC (optimized Row Columnar) / Parquest file format    
+			> efficient compression and fast reads for Hive queries
+			>> ORC is designed specifically for Hive, not suitable for other MapReduce interfaces like Pig, Java, or engines like Impala
+			>> Parquet is suitable for other interfaces / engines, more general purpose for Hadoop
+			
+
+HBase
+	> distributed, spares, columnar data storage system for managing structured data	
+		> not RDBMS in the same way as Hive / Impala exist, no native support for SQL (but SQL based layers do exist, e.g. Phoenix)
+		
+	> real time read/write random access to very large datasets
+	
+	> uses HDFS as storage layer
+	
+	
+	
+	
+	
+	
+			
