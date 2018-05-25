@@ -328,7 +328,7 @@ Oozie
 	> Oozie has a web-based interface where job progress can be viewed
 	
 	
-Hive
+Hive (Apache)
 	> HiveQL = SQL-like dialect
 	> default engine for Hive = MapReduce, but can also use Spark (Cloudera) or Tez (Horton)
 	> uses HDFS files as source	
@@ -341,12 +341,110 @@ Hive
 	> need to specify files are compressed to be able to read compressed file using Hive
 		> but would need to be using a splittable compression algorithm
 		
+	> Hive's high latency makes it a good choice for integration with PDI Jobs / Transformations
+		> ETL / scheduled reports, not sub-second query responses
+		
+	> PDI connects to Hive using JDBC driver
 
-
-
+	> Hive Thrift Server must run on port 10000
 	
+	> Any SQL script steps within PDI can run on Hive, once the database connection is established
+	
+	> all files in a folder releting to a table will exist in that table
+	
+	
+		
 
+Impala (Cloudera)
+	> general purpose SQL query engine
+		> same metastore, SQL syntax, ODBC driver and UI as Apache Hive
+	> stores additional table metadata on either HDFS or HBase
+	> typically much faster performance than Hive
+		> jobs are executed more as a traditional RDBMS 
+			> better for analytical, speed of thought type queries
+			> no MapReduce
+			
+	> Impala daemon runs on each Hadoop Data Node
+
+	> tables defined in Impala and Hive in the same way
+		> Impala uses the Hive metastore - need Impala to import this 
+
+    > Impala = 'always on', daemons always listening for execution tasks
+		> quicker than MapReduce where the code needs to be generated to spin up mappers on all required nodes and reducers to combine the results 
+			> Impala's daemons does all of these tasks immediately without the overhead of startup time or execution of multiple steps (compile code, map, reduce...)
+			
+			
+
+			
+Loading data into Hive
+	
+	> copy files into HDFS folder for the Hive table using Hadoop Copy Files step in PDI
+	
+	> use the Hadoop File Output step to create a file for Hive
+	
+	> use other file management steps to create or move a file for Hive
 	
 	
+	> avoid using steps like Table Output, Update, Deletes from PDI with Hive
+		> but if this is required, turn on transaction/ACID support in Hive
+	
+	
+Extracting data from Hive
+
+	> Tabie Input step reading from Hive using HiveQL
+		> may look like it has hung whilst Hive is being queried
+		
+	
+		
+Hive best practices
+
+		> use Tez execution engine rather than traditional MapReduce for better performance & throughput
+		
+		> use of vectorization can improve performance (from Hive 13) 
+			> performs scans, aggregations, filter, joins in batches of 1024 rows rather than row by row	
+				> enabled with specific parameters
+				
+		> partitioning tables 
+		
+		> map joins
+		
+		> Cost Based Optimizer (CBO) - with Hive 14
+			> performs optimization based on query cost for more efficiency
+				> enabled with specific parameters
+		
+		> parallel execution
+			> enabled with a specific parameter
+		
+		> ORC (optimized Row Columnar) / Parquest file format    
+			> efficient compression and fast reads for Hive queries
+			>> ORC is designed specifically for Hive, not suitable for other MapReduce interfaces like Pig, Java, or engines like Impala
+			>> Parquet is suitable for other interfaces / engines, more general purpose for Hadoop
+			
+
+HBase
+	> distributed, sparse columnar data storage system for managing structured data	
+		> not RDBMS in the same way as Hive / Impala exist, no native support for SQL (but SQL based layers do exist, e.g. Phoenix)
+		
+	> real time read/write random access to very large datasets
+	
+	> uses HDFS as storage layer
+	
+	
+	
+Spark (Apache)
+	> cluster computing platform designed to be fast and general-purpose
+		> to improve inefficiencies of MapReduce
+		> uses memory instead of disk for computations
+		> good for streaming and interactive queries as well as batches
+			> iterative processing rather than MapReduce's batch processing
+		
+	> supports Scala, Python, Java, R
+	
+	> SPark SQL tool available for structured data processing
+	
+	
+	
+		
+		
 	
 	
