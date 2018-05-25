@@ -328,7 +328,7 @@ Oozie
 	> Oozie has a web-based interface where job progress can be viewed
 	
 	
-Hive
+Hive (Apache)
 	> HiveQL = SQL-like dialect
 	> default engine for Hive = MapReduce, but can also use Spark (Cloudera) or Tez (Horton)
 	> uses HDFS files as source	
@@ -341,10 +341,31 @@ Hive
 	> need to specify files are compressed to be able to read compressed file using Hive
 		> but would need to be using a splittable compression algorithm
 		
+	> Hive's high latency makes it a good choice for integration with PDI Jobs / Transformations
+		> not sub-second query responses
+		
 
+Impala (Cloudera)
+	> general purpose SQL query engine
+		> same metastore, SQL syntax, ODBC driver and UI as Apache Hive
+	> stores additional table metadata on either HDFS or HBase
+	> typically much faster performance than Hive
+		> jobs are executed more as a traditional RDBMS 
+			> better for analytical, speed of thought type queries
+			> no MapReduce
+			
+	> Impala daemon runs on each Hadoop Data Node
 
+	> tables defined in Impala and Hive in the same way
+		> Impala uses the Hive metastore - need Impala to import this 
 
-	
+    > Impala = 'always on', daemons always listening for execution tasks
+		> quicker than MapReduce where the code needs to be generated to spin up mappers on all required nodes and reducers to combine the results 
+			> Impala's daemons does all of these tasks immediately without the overhead of startup time or execution of multiple steps (compile code, map, reduce...)
+			
+			
+
+			
 
 	
 	
