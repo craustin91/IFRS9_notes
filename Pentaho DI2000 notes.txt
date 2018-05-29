@@ -428,6 +428,457 @@ HBase
 	> real time read/write random access to very large datasets
 	
 	> uses HDFS as storage layer
+
+
+
+Spark (Apache)
+	> cluster computing platform designed to be fast and general-purpose
+		> to improve inefficiencies of MapReduce
+		> uses memory instead of disk for computations
+		> good for streaming and interactive queries as well as batches
+			> iterative processing rather than MapReduce's batch processing
+		
+	> supports Scala, Python, Java, R
+	
+	> SPark SQL tool available for structured data processing
+
+	
+	
+	
+	
+	
+			
+
+DI2000
+
+3 Vs of Big Data
+	> Volume
+	> Velocity
+	> Variety
+	
+
+Workflow orchestration
+	> Ingest - recommended not to load directly from a source db to Hadoop, use a tool like Flume / Sqoop / PDI
+	> Process - visual MapReduce in PDI 
+	> Publish
+	> Report
+	
+	
+Hadoop <> a db replacement - data processing is latent, minutes/hours for jobs to run
+	> not real time responses, not interactive
+	
+	
+Major Hadoop distributions
+	> Cloudera
+	> HortonWorks
+	> Apache
+	> MapR
+
+	
+For writing to HDFS, PDI contacts the Name Node with the file, the Name Node then distributes the file across Data Nodes
+	> same concept applies to reading
+		> PDI asks for a file, Name Node finds where this file is distributed and returns it
+
+		
+PDI
+	> Job entries can manage files in HDFS
+	> Transformations can create and append files in HDFS, and read files in HDFS
+	
+	
+Specific PDI steps:
+	> Hadoop Copy Files
+		> Job entry that copies files between Hadoop and external systems, e.g. local, FTP
+		> streams data from HDFS through PDI to the destination
+		> same interface as Copy Files
+	> Hadoop File Input
+		> reads data from Hadoop into Transformation data streams
+	> Hadoop File Output
+		> Transformation step that writes data into HDFS from a Transformation data stream
+		
+		
+PDI uses Apache VFS (virtual file system) driver to interact with HDFS 
+	> cannot use HDFS via GUI, need to manually enter HDFS URL to use file management job entries
+		> hdfs://<username>:<password>@<namenode>:<port>/<folderpath>
+		
+		
+HDFS command line:
+http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/FileSystemShell.html
+
+
+
+HDFS better for larger files
+	> lots of smaller files slows down the Name Node
+	> files should be at least a few block sizes (blocks ususally 64MB / 128MB)
+Splittable compression is recommended
+
+	
+	
+PDI + HDFS best practices
+	> use PDI HDFS compatible steps to move data in and out of HDFS
+	> do NOT use PDI for copying / moving files within the HDFS, as this pushes data through PDI needlessly (off cluster and back to cluster). Use the HDFS CLI for this.
+	> use HDFS's CLI via PDI Shell to efficiently move/copy files within HDFS
+	> do NOT use PDI HDFS compatible input steps to read in rows and then process them in a transformation
+		> this pulls data out of Hadoop cluster and into PDI serrver needlessly	
+		> instead, re-write such transformations is Pentaho MapReduce jobs and run them within the Hadoop cluster
+		> only PDI MapReduce jobs run in cluster
+		
+
+Sqoop
+	> high performance import/export mechanism
+	> efficient transfer of bulk data between Hadoop and structured datastores e.g. RDBMS
+	> can be used to import data from external structured datastores into HDFS, Hive, HBase
+	> CLI utlitity for various import/export tasks
+	
+	> Sqoop is ideal for transferring many tables with lots of data between Hadoop and RDBMS
+		> data type conversion can be a problem, may need to use Pentaho MapReduce to clean up & format data correctly once in HDFS
+		> using PDI may be easier for only a few small/meduim sized tables
+		> PDI can be used to orchestrate the Sqoop tasks
+		
+PDI has Sqoop Import & Sqoop Export function providing a GUI for Sqoop's CLI	
+
+
+		
+PDI best practices for Data Ingestion into Hadoop
+	> Convert source data to formats best supported by Hadoop	
+		> if source data is compressed and NOT splittable, use PDI to uncompress and split the file or send to HDFS uncompressed and have Hadoop configured to compress
+		> for XML/JSON, store each object/document in a single line or convert to binary for easier ingestion by Hadoop
+			> XML is not splittable because it has start and end tags...
+		> Use PDI to aggregate many small files into large files for HDFS
+		> Use PDI to collect data from different types of sources periodically and store the data in HDFS
+		> Use PDI as a JMS client to collect messages and store in HDFS
+		> Don't do major data processing within PDI - just use PDI to collect data and store in HDFS, use Hadoop to perform the processing
+		
+
+MapReduce components
+	> Driver
+		> configures the MapReduce job (input/output locations, mappers, reduecers)
+		> submits the job to the cluster - in PDI, this is the Pentaho MapReduce Job Step
+		
+	> Mapper
+		> Reads in single key/value pair from file block, does some processing, outputs a key & value
+		> each file is broken down into blocks by HDFS, blocks are distributed across different Data Nodes	
+			> a mapper is started for each unique block of data
+			> mappers process a single HDFS block of data at a time
+			
+	> Shuffle & Sort
+		> sorts and sends the output of the mappers to the reducers
+		> all output for the same key is sent to the same reducer
+		> a partitioner is used to assign a key to a reducer
+		
+	> Recuder
+		> aggregates mapper output based on the mapper key
+		> receives a sorted set of keys, each with an unsorted collection of values
+		> these are processed to output a key and a value
+		> no control over which key goes to which reducer except with a custom partitioner
+		> each reducer writes to its own output file
+		
+
+		
+MapReduce daemons
+
+	> Job Tracker
+		> manages MR jobs submitted to Hadoop
+		> submits tasks to the Task Trackers (tasks can be Map or Reduce tasks)
+		> No data flows through the Job Tracker
+		> manages the resources for tasks - number of tasks and where they are running
+		
+	> Task Tracker
+		> runs an individual task attempt
+		> sends periodic heartbeats to Job Tracker, if not received for 10 mins, task assumed to have failed
+			> another task is started to process the data, if a task fails 4 times the job fails
+			
+
+Within PDI
+	> a Transformation is created for the Mapper / Combiner / Reducer
+	> PDI MR step is the driver of the code - Pentaho MapReduce Job entry - this operates in cluster
+	
+	> Pentaho MapReduce Job Entry
+		> tabs for Mapper, Combiner, Reducer transformations
+			> including step names for input / output (Mapper)
+			> Hadoop Job Name field corresponds to identity of job running on the cluster
+		> suppress checkboxes
+				> sets key / value to null, if we do not want them in the output (Job Setup tab)
+		> enable blocking - wait for the job to finish before proceeding, required for logging 
+		
+		> Hadoop Job Executor step is the main unit for executing MR code
+		
+
+		
+MapReduce best practices
+
+Combiners
+	> Optional transformation to reduce network demands
+		> similar to reducers but running on the mapper nodes on the output of a SINGLE mapper
+		> optional - even if a combiner is defined, Hadoop may choose not to use it - this is determined based on available resources
+	> in PDI, combiners are just another transformation
+	
+Distributed cache
+	> making files outside of the scope of a MR job available to a MR job
+		> e.g. a lookup file in the Pentaho mapper or reducer
+	> could include JARs containing custom classes, partitioners, input/output formats etc in the class path
+		> files must be in HDFS prior to running the job - then available to every node in the cluster
+		> configured via User Defined properties in the MapReduce Job entry
+		
+Compression
+	> significantly reduces the amount of data stored in HDFS and intermediate processing files
+	> reduced amount of data that needs to be replicated by HDFS
+	> can compress mapper output to reduce traffic between mappers and reducers
+	> can use compression to store final output of MapReduce
+	> compression can be set per application
+MapReduce is very disk IO intensive, so using compression is a big win
+
+	Compression best practices
+		> use Snappy compression codecs in conjunction with container file formats that support splitting
+		> if input files are compressed and do not use a container file format, make sure the compression codec supports splitting (e.g. Indexed LZO or bzip2)
+		> if the compression algorithm does not support splitting, files should be pre-processed by chunking into smaller sizes (<= an HDFS block)
+			> otherwise, a single mapper will process the entire file at run time
+			
+		> Snappy libraries must be installed on Spoon and DI server to use Snappy compression
+		> Indexed LZO is in cluster only, must be installed on the Hadoop cluster
+		
+
+		
+MapReduce tips
+
+.....Do.....
+	> code the reducer knowing all values for the same key will flow through the same reducer
+	> use multiple MapReduce jobs
+	
+.....Do Not.....
+	> connect to traditional DB from mappers/reducers (lots of out of cluster network traffic!)
+	> sort - this will cause the job to read in all of the data from a given block into memory - let the Shuffle/Sort step do this for you
+	> assume that all values will flow through the same mapper - the mapper will receive a random set of values
+	> expect a reducer to sum or count values across keys - reducer logic should presume operations for 1 key at a time
+	> expect a combiner to always run - Hadoop decides if these run even when they are configured
+	> make a mapper/reducer overly complex
+	> use merge steps - this will cause the job to read in all of the data from a given block into memory
+	> use sub-transformations in transformations that are used as mappers/combiners/reducers (this is currently only supported in v8.1)
+	
+	
+	
+	
+Numbers of mappers / reducers
+
+	> Hadoop may ignore the specified number of mappers - this is just a suggestion to Hadoop
+	
+	> if a reducer is not required and the mapper output does not need to be sorted, set number of reducers to 0
+		> this will skip shuffle/sort and improve processing performance
+		> if # reducers is not set OR is > 0, the shuffle/sort phase will be run even if there is no reducer
+	> each reducer writes to its own output directory
+	
+
+	
+
+	
+Writing to multiple output HDFS files in Pentaho MapReduce
+
+	> PDI does not support Hadoop's native features to provide multiple output destinations for MapReduce. In order to achieve this...
+	
+		> In the mapper/reducer, use the Pentaho Hadoop Output Step to write data to files in HDFS in addition to the standard mapper/reducer output files
+			> write them to the same directory as the standard mapper/reducer outpiut
+			
+		> each instance of the mapper/reducer must make sure the filename created in HDFS is unique in the HDFS name space
+			> programatically create a unique name for the file by using the timestamp as the filename
+			
+
+	
+	
+	
+MapReduce memory issues
+
+	> JVM memory requirements are based on...
+		> number of rows simultaneously processed by MapReduce
+		> size of each row
+		> number of steps and types of steps involved in MapReduce
+		
+	> if a Java Heap Space error in mapper/reducer occurs...
+		> lower the "Number of Rows in Rowset" in Transformation Settings
+		> increase the mapper/recuder's JVM heap space - this is a Hadoop parameter
+		
+		
+	
+	
+MapReduce error handling
+
+	> as well as PDI's step level error handling, a transformation can also enable Hadoop's skip bad records feature
+		> multiple methods available to be called as PDI parameters
+		
+		
+		
+Unit testing Pentaho MapReduce	
+	> recommended to use stub files - i.e. outside of the cluster to test a task
+		> stub file can come from local machine or HDFS, but process it outside of the cluster - disable the MapReduce Input/Output steps and use the preview option
+		> for a reducer test, the stub file must be in key sort order
+		
+	> make sure the steps are working as expected before running anything on the cluster
+	
+
+
+YARN = Hadoop's scalable cluster resource management system	
+	> separates cluster resource management from MapReduce processing
+	> other tools / apps use Hadoop resources through YARN	
+		> PDI, Spark, Tez, etc.
+		
+	> management contention and execution contention are de-coupled
+	
+
+YARN components
+
+	> Resource Manager
+		> one per cluster
+		> manages use of resources across the cluster
+		
+	> Node Managers
+		> run on all nodes in a cluster
+		> launch and control Containers
+		
+	> Containers
+		> execute application-specific processes with constrained set of resources (memory, CPU)
+		> Node Manager launches an application master in a container
+		> can request more containers from the Resource Manager
+		
+		
+yarn-site.xml file contains key properties controlling logging 
+
+
+
+
+PDI on YARN
+	
+	> Carte = jetty server 
+	> nodes in a PDI cluster are running Carte
+	
+	> can start Carte instances using YARN within the Hadoop cluster
+		> execute pieces of transformation logic on the Carte instances (e.g. round robin style)
+		
+	> Shims
+		> Pentaho supports different versions of Hadoop distributions from several vendors such as Cloudera, Hortonworks and MapR. To support this many versions, Pentaho uses an abstraction layer, called a shim, that connects to the different Hadoop distributions.
+	
+	
+	
+	
+Pig
+	> data flow language, Pig Latin
+		> Pig engine interpets Pig Latin and converts to MapReduce via a created jar
+	> entirely in cluster, cannot load in/out of cluster
+	> good for unstructured data, but generally slower than Hive
+	> User Defined Functions (UDFs) avaiable for some types of job
+	
+	> Pig Script Executor step available in PDI	
+		> PDI can be used to orchestrate Pig scripts > adding things like blocking, for unit testing, additional parameters, bringing files into cluster via PDI to run Pig on
+		
+		
+Oozie
+	> workflow scheduler for processes within Apache Hadoop
+	> Oozie scripts can be orchestrated with PDI - Ozzie Job Executor step available
+	> 2 types of Oozie jobs
+		> workflow
+		> coordinator 
+		- both defined by workflox.xml 
+		
+	> Oozie has a web-based interface where job progress can be viewed
+	
+	
+Hive (Apache)
+	> HiveQL = SQL-like dialect
+	> default engine for Hive = MapReduce, but can also use Spark (Cloudera) or Tez (Horton)
+	> uses HDFS files as source	
+		> table metadata describes the column structure of data in files
+		> table metadata stored in metadata database - derby db by default, usually MySQL is standard choice for multiple connections
+		
+	> select * runs instantly, all other queries generate MapReduce to takes longer - 10s seconds to hours
+	> CLI also available, using Hive Thrift Server 2
+	
+	> need to specify files are compressed to be able to read compressed file using Hive
+		> but would need to be using a splittable compression algorithm
+		
+	> Hive's high latency makes it a good choice for integration with PDI Jobs / Transformations
+		> ETL / scheduled reports, not sub-second query responses
+		
+	> PDI connects to Hive using JDBC driver
+
+	> Hive Thrift Server must run on port 10000
+	
+	> Any SQL script steps within PDI can run on Hive, once the database connection is established
+	
+	> all files in a folder releting to a table will exist in that table
+	
+	
+		
+
+Impala (Cloudera)
+	> general purpose SQL query engine
+		> same metastore, SQL syntax, ODBC driver and UI as Apache Hive
+	> stores additional table metadata on either HDFS or HBase
+	> typically much faster performance than Hive
+		> jobs are executed more as a traditional RDBMS 
+			> better for analytical, speed of thought type queries
+			> no MapReduce
+			
+	> Impala daemon runs on each Hadoop Data Node
+
+	> tables defined in Impala and Hive in the same way
+		> Impala uses the Hive metastore - need Impala to import this 
+
+    > Impala = 'always on', daemons always listening for execution tasks
+		> quicker than MapReduce where the code needs to be generated to spin up mappers on all required nodes and reducers to combine the results 
+			> Impala's daemons does all of these tasks immediately without the overhead of startup time or execution of multiple steps (compile code, map, reduce...)
+			
+			
+
+			
+Loading data into Hive
+	
+	> copy files into HDFS folder for the Hive table using Hadoop Copy Files step in PDI
+	
+	> use the Hadoop File Output step to create a file for Hive
+	
+	> use other file management steps to create or move a file for Hive
+	
+	
+	> avoid using steps like Table Output, Update, Deletes from PDI with Hive
+		> but if this is required, turn on transaction/ACID support in Hive
+	
+	
+Extracting data from Hive
+
+	> Tabie Input step reading from Hive using HiveQL
+		> may look like it has hung whilst Hive is being queried
+		
+	
+		
+Hive best practices
+
+		> use Tez execution engine rather than traditional MapReduce for better performance & throughput
+		
+		> use of vectorization can improve performance (from Hive 13) 
+			> performs scans, aggregations, filter, joins in batches of 1024 rows rather than row by row	
+				> enabled with specific parameters
+				
+		> partitioning tables 
+		
+		> map joins
+		
+		> Cost Based Optimizer (CBO) - with Hive 14
+			> performs optimization based on query cost for more efficiency
+				> enabled with specific parameters
+		
+		> parallel execution
+			> enabled with a specific parameter
+		
+		> ORC (optimized Row Columnar) / Parquest file format    
+			> efficient compression and fast reads for Hive queries
+			>> ORC is designed specifically for Hive, not suitable for other MapReduce interfaces like Pig, Java, or engines like Impala
+			>> Parquet is suitable for other interfaces / engines, more general purpose for Hadoop
+			
+
+HBase
+	> distributed, sparse columnar data storage system for managing structured data	
+		> not RDBMS in the same way as Hive / Impala exist, no native support for SQL (but SQL based layers do exist, e.g. Phoenix)
+		
+	> real time read/write random access to very large datasets
+	
+	> uses HDFS as storage layer
 	
 	
 	
@@ -446,5 +897,3 @@ Spark (Apache)
 	
 		
 		
-	
-	
