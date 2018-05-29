@@ -1,0 +1,16 @@
+Maven
+
+Software management tool based on Project Object Model (POM)
+	> for Java projects
+
+Standard way to build projects
+
+POM 
+	> an XML file containing information about the project & configurations details
+	> describes a project
+	> name, version, source code locations, dependencies
+	
+Archetypes = templates
+
+
+	
